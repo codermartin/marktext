@@ -59,6 +59,15 @@ export default function (keybindings) {
         actions.toggleTabBar(focusedWindow)
       }
     }, {
+      label: 'Show Terminal',
+      id: 'terminalMenuItem',
+      accelerator: keybindings.getAccelerator('view.toggle-terminal'),
+      type: 'checkbox',
+      checked: true,
+      click (item, focusedWindow) {
+        actions.toggleTerminal(focusedWindow)
+      }
+    }, {
       label: 'Toggle Table of Contents',
       id: 'tocMenuItem',
       accelerator: keybindings.getAccelerator('view.toggle-toc'),

@@ -4,12 +4,17 @@ import bus from '../bus'
 const width = localStorage.getItem('side-bar-width')
 const sideBarWidth = typeof +width === 'number' ? Math.max(+width, 220) : 280
 
+const storedTerminalHeight = localStorage.getItem('terminal-height')
+const terminalHeight = storedTerminalHeight ? Math.max(+storedTerminalHeight, 120) : 220
+
 // messages from main process, and do not change the state
 const state = {
   rightColumn: 'files',
   showSideBar: false,
   showTabBar: false,
-  sideBarWidth
+  sideBarWidth,
+  showTerminal: true,
+  terminalHeight
 }
 
 const getters = {}
@@ -29,6 +34,11 @@ const mutations = {
     // TODO: Add side bar to session (GH#732).
     localStorage.setItem('side-bar-width', Math.max(+width, 220))
     state.sideBarWidth = width
+  },
+  SET_TERMINAL_HEIGHT (state, height) {
+    const h = Math.max(+height, 120)
+    localStorage.setItem('terminal-height', h)
+    state.terminalHeight = h
   }
 }
 
@@ -61,12 +71,16 @@ const actions = {
 
   DISPATCH_LAYOUT_MENU_ITEMS ({ state }) {
     const { windowId } = global.marktext.env
-    const { showTabBar, showSideBar } = state
-    ipcRenderer.send('mt::view-layout-changed', windowId, { showTabBar, showSideBar })
+    const { showTabBar, showSideBar, showTerminal } = state
+    ipcRenderer.send('mt::view-layout-changed', windowId, { showTabBar, showSideBar, showTerminal })
   },
 
   CHANGE_SIDE_BAR_WIDTH ({ commit }, width) {
     commit('SET_SIDE_BAR_WIDTH', width)
+  },
+
+  CHANGE_TERMINAL_HEIGHT ({ commit }, height) {
+    commit('SET_TERMINAL_HEIGHT', height)
   }
 }
 

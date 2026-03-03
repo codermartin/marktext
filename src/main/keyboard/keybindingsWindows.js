@@ -11,7 +11,7 @@ export default new Map([
 
   // File menu
   ['file.new-window', 'Ctrl+N'],
-  ['file.new-tab', 'Ctrl+T'],
+  ['file.new-tab', ''],
   ['file.open-file', 'Ctrl+O'],
   ['file.open-folder', 'Ctrl+Shift+O'],
   ['file.save', 'Ctrl+S'],
@@ -55,7 +55,7 @@ export default new Map([
   ['paragraph.heading-6', ''],
   ['paragraph.upgrade-heading', 'Ctrl+Plus'],
   ['paragraph.degrade-heading', 'Ctrl+-'],
-  ['paragraph.table', 'Ctrl+Shift+T'],
+  ['paragraph.table', 'Ctrl+T'],
   ['paragraph.code-fence', 'Ctrl+Shift+K'],
   ['paragraph.quote-block', 'Ctrl+Shift+Q'],
   ['paragraph.math-formula', 'Ctrl+Alt+N'],
@@ -97,6 +97,7 @@ export default new Map([
   ['view.toggle-sidebar', 'Ctrl+J'],
   ['view.toggle-toc', 'Ctrl+K'],
   ['view.toggle-tabbar', 'Ctrl+Shift+B'],
+  ['view.toggle-terminal', 'Ctrl+Shift+T'],
   ['view.toggle-dev-tools', 'Ctrl+Alt+I'],
   ['view.dev-reload', 'Ctrl+F5'],
   ['view.reload-images', 'F5'],

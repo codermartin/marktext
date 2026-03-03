@@ -81,6 +81,7 @@ const commandDescriptions = Object.freeze({
   'view.toggle-sidebar': 'View: Toggle Sidebar',
   'view.toggle-toc': 'View: Toggle Table of Content',
   'view.toggle-tabbar': 'View: Toggle Tabs',
+  'view.toggle-terminal': 'View: Toggle Terminal Panel',
   'view.toggle-dev-tools': 'View: Show Developer Tools (Debug)',
   'view.dev-reload': 'View: Reload Window (Debug)',
   'tabs.cycle-forward': 'Misc: Cycle Tabs Forward',

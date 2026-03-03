@@ -97,6 +97,7 @@ const COMMANDS = Object.freeze({
   VIEW_TOGGLE_DEV_TOOLS: 'view.toggle-dev-tools',
   VIEW_TOGGLE_SIDEBAR: 'view.toggle-sidebar',
   VIEW_TOGGLE_TABBAR: 'view.toggle-tabbar',
+  VIEW_TOGGLE_TERMINAL: 'view.toggle-terminal',
   VIEW_TOGGLE_TOC: 'view.toggle-toc',
   VIEW_TYPEWRITER_MODE: 'view.typewriter-mode',
 

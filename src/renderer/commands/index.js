@@ -589,6 +589,11 @@ const commands = [
     execute: async () => {
       bus.$emit('view:toggle-layout-entry', 'showTabBar')
     }
+  }, {
+    id: 'view.toggle-terminal',
+    execute: async () => {
+      bus.$emit('view:toggle-layout-entry', 'showTerminal')
+    }
   },
 
   {

@@ -1,6 +1,7 @@
 import path from 'path'
 import fsPromises from 'fs/promises'
 import { exec } from 'child_process'
+import * as pty from 'node-pty'
 import dayjs from 'dayjs'
 import log from 'electron-log'
 import { app, BrowserWindow, clipboard, dialog, ipcMain, nativeTheme, shell } from 'electron'
@@ -424,6 +425,61 @@ class App {
   _listenForIpcMain () {
     registerKeyboardListeners()
     registerSpellcheckerListeners()
+
+    // Map windowId → PTY process
+    const ptyProcesses = new Map()
+
+    ipcMain.on('mt::terminal-create', (event, windowId, { cwd, cols, rows }) => {
+      const win = this._windowManager.get(windowId)
+      if (!win) return
+
+      // Kill any existing PTY before creating a new one
+      if (ptyProcesses.has(windowId)) {
+        ptyProcesses.get(windowId).kill()
+        ptyProcesses.delete(windowId)
+      }
+
+      const shell = process.env.SHELL || '/bin/bash'
+      const ptyProcess = pty.spawn(shell, [], {
+        name: 'xterm-256color',
+        cols: cols || 80,
+        rows: rows || 24,
+        cwd: cwd || process.env.HOME,
+        env: process.env
+      })
+
+      ptyProcesses.set(windowId, ptyProcess)
+
+      ptyProcess.onData(data => {
+        win.browserWindow.webContents.send('mt::terminal-data', data)
+      })
+
+      ptyProcess.onExit(() => {
+        ptyProcesses.delete(windowId)
+        if (!win.browserWindow.isDestroyed()) {
+          win.browserWindow.webContents.send('mt::terminal-exit')
+        }
+      })
+    })
+
+    ipcMain.on('mt::terminal-input', (event, windowId, data) => {
+      if (ptyProcesses.has(windowId)) {
+        ptyProcesses.get(windowId).write(data)
+      }
+    })
+
+    ipcMain.on('mt::terminal-resize', (event, windowId, { cols, rows }) => {
+      if (ptyProcesses.has(windowId)) {
+        ptyProcesses.get(windowId).resize(cols, rows)
+      }
+    })
+
+    ipcMain.on('mt::terminal-kill', (event, windowId) => {
+      if (ptyProcesses.has(windowId)) {
+        ptyProcesses.get(windowId).kill()
+        ptyProcesses.delete(windowId)
+      }
+    })
 
     ipcMain.on('app-create-editor-window', () => {
       this._createEditorWindow()

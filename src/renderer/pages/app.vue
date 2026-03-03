@@ -26,6 +26,7 @@
         :text-direction="textDirection"
         :platform="platform"
       ></editor-with-tabs>
+      <terminal-panel v-if="init"></terminal-panel>
       <command-palette></command-palette>
       <about-dialog></about-dialog>
       <export-setting-dialog></export-setting-dialog>
@@ -48,6 +49,7 @@ import ExportSettingDialog from '@/components/exportSettings'
 import Rename from '@/components/rename'
 import Tweet from '@/components/tweet'
 import ImportModal from '@/components/import'
+import TerminalPanel from '@/components/terminal'
 import { loadingPageMixins } from '@/mixins'
 import { mapState } from 'vuex'
 import bus from '@/bus'
@@ -66,7 +68,8 @@ export default {
     Rename,
     Tweet,
     ImportModal,
-    CommandPalette
+    CommandPalette,
+    TerminalPanel
   },
   mixins: [loadingPageMixins],
   data () {
