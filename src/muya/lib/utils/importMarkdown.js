@@ -581,11 +581,10 @@ const importRegister = ContentState => {
     if (hasCursor) {
       travel(this.blocks)
     } else {
-      const lastBlock = this.getLastBlock()
-      const key = lastBlock.key
-      const offset = lastBlock.text.length
-      cursor.anchor = { key, offset }
-      cursor.focus = { key, offset }
+      const firstBlock = this.getFirstBlock()
+      const key = firstBlock.key
+      cursor.anchor = { key, offset: 0 }
+      cursor.focus = { key, offset: 0 }
     }
     if (cursor.anchor && cursor.focus) {
       this.cursor = cursor
