@@ -5,13 +5,6 @@
     :style="{ height: terminalHeight + 'px' }"
   >
     <div class="terminal-resize-handle" @mousedown="startResize"></div>
-    <div class="terminal-header">
-      <span class="terminal-title">Terminal</span>
-      <div class="terminal-controls">
-        <button class="terminal-btn" title="Clear" @click="clearTerminal">Clear</button>
-        <button class="terminal-btn terminal-btn-close" title="Close terminal" @click="closeTerminal">✕</button>
-      </div>
-    </div>
     <div ref="xtermContainer" class="xterm-container"></div>
   </div>
 </template>
@@ -40,13 +33,12 @@ export default {
       currentPathname: state => state.editor.currentFile.pathname,
       projectTree: state => state.project.projectTree
     }),
+    projectPath () {
+      return this.projectTree && this.projectTree.pathname
+    },
     cwd () {
-      if (this.projectTree && this.projectTree.pathname) {
-        return this.projectTree.pathname
-      }
-      if (this.currentPathname) {
-        return path.dirname(this.currentPathname)
-      }
+      if (this.projectPath) return this.projectPath
+      if (this.currentPathname) return path.dirname(this.currentPathname)
       return null
     },
     windowId () {
@@ -65,6 +57,12 @@ export default {
       this.$nextTick(() => {
         if (this.fitAddon) this.fitAddon.fit()
       })
+    },
+    projectPath (newPath, oldPath) {
+      console.log('[terminal] projectPath changed:', oldPath, '->', newPath, '| showTerminal:', this.showTerminal, '| term:', !!this.term)
+      if (!newPath || newPath === oldPath) return
+      if (!this.showTerminal || !this.term) return
+      this.restartInCwd(newPath)
     }
   },
   mounted () {
@@ -166,11 +164,16 @@ export default {
         this.fitAddon = null
       }
     },
-    clearTerminal () {
-      if (this.term) this.term.clear()
-    },
-    closeTerminal () {
-      this.$store.commit('TOGGLE_LAYOUT_ENTRY', 'showTerminal')
+    restartInCwd (newCwd) {
+      // Kill existing PTY and clear the xterm screen
+      ipcRenderer.send('mt::terminal-kill', this.windowId)
+      if (this.term) {
+        this.term.clear()
+        this.term.writeln(`\r\n\x1b[90m[Switching to: ${newCwd}]\x1b[0m\r\n`)
+      }
+      // Spawn a new PTY in the new directory (reuse existing xterm instance)
+      const { cols, rows } = this.term
+      ipcRenderer.send('mt::terminal-create', this.windowId, { cwd: newCwd, cols, rows })
     },
     startResize (e) {
       const startY = e.clientY
@@ -212,51 +215,6 @@ export default {
 
 .terminal-resize-handle:hover {
   background: #4a9eff;
-}
-
-.terminal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 2px 8px;
-  background: #252526;
-  border-bottom: 1px solid #3c3c3c;
-  flex-shrink: 0;
-  height: 28px;
-}
-
-.terminal-title {
-  font-size: 11px;
-  font-weight: 600;
-  color: #cccccc;
-  opacity: 0.8;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.terminal-controls {
-  display: flex;
-  gap: 4px;
-}
-
-.terminal-btn {
-  background: transparent;
-  border: 1px solid transparent;
-  color: #cccccc;
-  cursor: pointer;
-  padding: 1px 7px;
-  font-size: 11px;
-  border-radius: 3px;
-  opacity: 0.7;
-}
-
-.terminal-btn:hover {
-  opacity: 1;
-  border-color: #555;
-}
-
-.terminal-btn-close {
-  font-size: 12px;
 }
 
 .xterm-container {
