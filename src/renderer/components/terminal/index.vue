@@ -176,7 +176,7 @@ export default {
         // Spawn a new PTY in the new directory (reuse existing xterm instance)
         const { cols, rows } = this.term
         ipcRenderer.send('mt::terminal-create', this.windowId, { cwd: newCwd, cols, rows })
-        
+
         // Use $nextTick to ensure PTY is created before focusing
         this.$nextTick(() => {
           if (this.term) {
