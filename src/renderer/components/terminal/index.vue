@@ -171,9 +171,19 @@ export default {
         this.term.clear()
         this.term.writeln(`\r\n\x1b[90m[Switching to: ${newCwd}]\x1b[0m\r\n`)
       }
-      // Spawn a new PTY in the new directory (reuse existing xterm instance)
-      const { cols, rows } = this.term
-      ipcRenderer.send('mt::terminal-create', this.windowId, { cwd: newCwd, cols, rows })
+      // Add 100ms delay to ensure PTY cleanup completes before creating new one
+      setTimeout(() => {
+        // Spawn a new PTY in the new directory (reuse existing xterm instance)
+        const { cols, rows } = this.term
+        ipcRenderer.send('mt::terminal-create', this.windowId, { cwd: newCwd, cols, rows })
+        
+        // Use $nextTick to ensure PTY is created before focusing
+        this.$nextTick(() => {
+          if (this.term) {
+            this.term.focus()
+          }
+        })
+      }, 100)
     },
     startResize (e) {
       const startY = e.clientY
