@@ -129,6 +129,7 @@ export default {
       this.term.onData(data => {
         // Check for Ctrl+C (ASCII code 3)
         if (data === '\u0003') {
+          console.log('[terminal] Ctrl+C detected, handling smartly')
           this.handleCtrlC()
         } else {
           ipcRenderer.send('mt::terminal-input', this.windowId, data)
@@ -142,10 +143,12 @@ export default {
 
       // Handle terminal focus/blur events to manage keybindings
       this.term.onFocus(() => {
+        console.log('[terminal] Terminal gained focus, disabling conflicting shortcuts')
         ipcRenderer.send('mt::terminal-focus', this.windowId, true)
       })
 
       this.term.onBlur(() => {
+        console.log('[terminal] Terminal lost focus, re-enabling shortcuts')
         ipcRenderer.send('mt::terminal-focus', this.windowId, false)
       })
 
@@ -217,23 +220,30 @@ export default {
       document.addEventListener('mouseup', onMouseUp)
     },
     handleCtrlC () {
-      if (!this.term) return
+      if (!this.term) {
+        console.warn('[terminal] handleCtrlC called but term is null')
+        return
+      }
 
       // Check if there is any selected text in the terminal
       const hasSelection = this.term.hasSelection()
-      
+      console.log('[terminal] Ctrl+C handler - hasSelection:', hasSelection)
+
       if (hasSelection) {
         // Copy the selected text to clipboard
         const selectedText = this.term.getSelection()
+        console.log('[terminal] Copying selected text to clipboard:', selectedText)
         navigator.clipboard.writeText(selectedText).then(() => {
-          console.log('[terminal] Copied selected text:', selectedText)
+          console.log('[terminal] Successfully copied selected text:', selectedText)
         }).catch(err => {
           console.warn('[terminal] Failed to copy text:', err)
         })
       } else {
         // No selection, send Ctrl+C as interrupt signal to the terminal process
-        console.log('[terminal] Sending interrupt signal (Ctrl+C)')
+        console.log('[terminal] No selection - sending interrupt signal (Ctrl+C) to process')
+        console.log('[terminal] WindowId:', this.windowId, 'Signal: \\u0003')
         ipcRenderer.send('mt::terminal-input', this.windowId, '\u0003')
+        console.log('[terminal] Interrupt signal sent via IPC')
       }
     }
   }

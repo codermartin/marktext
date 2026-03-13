@@ -135,7 +135,6 @@ class Keyboard {
         this.shownFloat.size > 0 &&
         (
           event.key === EVENT_KEYS.Enter ||
-          event.key === EVENT_KEYS.Escape ||
           event.key === EVENT_KEYS.Tab ||
           event.key === EVENT_KEYS.ArrowUp ||
           event.key === EVENT_KEYS.ArrowDown
@@ -162,6 +161,15 @@ class Keyboard {
         }
         // event.stopPropagation()
         return
+      }
+
+      // Handle ESC key specially - allow it to reach float tools for proper closing
+      if (
+        this.shownFloat.size > 0 &&
+        event.key === EVENT_KEYS.Escape
+      ) {
+        // Let ESC bubble up to float tool handlers
+        // Don't prevent default or return early
       }
       switch (event.key) {
         case EVENT_KEYS.Backspace:
