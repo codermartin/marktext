@@ -221,7 +221,7 @@ export default {
 
       // Check if there is any selected text in the terminal
       const hasSelection = this.term.hasSelection()
-      
+
       if (hasSelection) {
         // Copy the selected text to clipboard
         const selectedText = this.term.getSelection()

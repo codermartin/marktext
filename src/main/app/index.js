@@ -484,7 +484,7 @@ class App {
     ipcMain.on('mt::terminal-focus', (event, windowId, isFocused) => {
       const win = this._windowManager.get(windowId)
       if (!win) return
-      
+
       // Notify the keybinding system about terminal focus state
       const { keybindings } = this._accessor
       if (keybindings && keybindings.setTerminalFocus) {
