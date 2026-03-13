@@ -125,9 +125,14 @@ export default {
       this.fitAddon.fit()
       this.term.focus()
 
-      // Send keystrokes to main process PTY
+      // Send keystrokes to main process PTY with smart Ctrl+C handling
       this.term.onData(data => {
-        ipcRenderer.send('mt::terminal-input', this.windowId, data)
+        // Check for Ctrl+C (ASCII code 3)
+        if (data === '\u0003') {
+          this.handleCtrlC()
+        } else {
+          ipcRenderer.send('mt::terminal-input', this.windowId, data)
+        }
       })
 
       // Notify main of size changes
@@ -210,6 +215,26 @@ export default {
 
       document.addEventListener('mousemove', onMouseMove)
       document.addEventListener('mouseup', onMouseUp)
+    },
+    handleCtrlC () {
+      if (!this.term) return
+
+      // Check if there is any selected text in the terminal
+      const hasSelection = this.term.hasSelection()
+      
+      if (hasSelection) {
+        // Copy the selected text to clipboard
+        const selectedText = this.term.getSelection()
+        navigator.clipboard.writeText(selectedText).then(() => {
+          console.log('[terminal] Copied selected text:', selectedText)
+        }).catch(err => {
+          console.warn('[terminal] Failed to copy text:', err)
+        })
+      } else {
+        // No selection, send Ctrl+C as interrupt signal to the terminal process
+        console.log('[terminal] Sending interrupt signal (Ctrl+C)')
+        ipcRenderer.send('mt::terminal-input', this.windowId, '\u0003')
+      }
     }
   }
 }
