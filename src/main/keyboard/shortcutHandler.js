@@ -24,6 +24,7 @@ class Keybindings {
 
     this.userKeybindings = new Map()
     this.keys = this.getDefaultKeybindings()
+    this._terminalFocusedWindows = new Set() // Track windows with focused terminals
     this._prepareKeyMapper()
 
     if (appEnvironment.isDevMode) {
@@ -82,6 +83,68 @@ class Keybindings {
     }
     shell.openPath(configPath)
       .catch(err => console.error(err))
+  }
+
+  setTerminalFocus (win, isFocused) {
+    if (isFocused) {
+      this._terminalFocusedWindows.add(win)
+      this._disableTerminalConflictingShortcuts(win)
+    } else {
+      this._terminalFocusedWindows.delete(win)
+      this._enableTerminalConflictingShortcuts(win)
+    }
+  }
+
+  _getTerminalConflictingCommands() {
+    // Commands that conflict with common terminal shortcuts
+    return [
+      'edit.copy',          // Ctrl+C conflicts with terminal interrupt
+      'edit.paste',         // Ctrl+V conflicts with terminal paste
+      'edit.cut',           // Ctrl+X conflicts with some terminal functions
+      'edit.select-all',    // Ctrl+A conflicts with terminal beginning of line
+      'edit.undo',          // Ctrl+Z conflicts with terminal suspend
+      'view.toggle-sidebar', // Ctrl+J might conflict with terminal line feed
+      'paragraph.order-list', // Ctrl+G might be used in terminal
+      'paragraph.bullet-list', // Ctrl+H might be used in terminal (backspace)
+      'format.inline-code', // Ctrl+Y might conflict with terminal yank
+      'format.strike',      // Ctrl+D might conflict with terminal EOF
+      'view.toggle-toc',    // Ctrl+K might conflict with terminal kill line
+      'format.hyperlink',   // Ctrl+L might conflict with terminal clear screen
+      'window.minimize',    // Ctrl+M might conflict with terminal carriage return
+      'edit.replace',       // Ctrl+R might conflict with terminal reverse search
+      'format.strong',      // Ctrl+B might conflict with terminal backward char
+      'format.emphasis',    // Ctrl+I might conflict with terminal tab
+      'format.underline',   // Ctrl+U might conflict with terminal kill line backward
+      'tabs.cycle-forward', // Ctrl+Tab might be used in terminal
+      'tabs.cycle-backward' // Ctrl+Shift+Tab might be used in terminal
+    ]
+  }
+
+  _disableTerminalConflictingShortcuts(win) {
+    const conflictingCommands = this._getTerminalConflictingCommands()
+    for (const commandId of conflictingCommands) {
+      const accelerator = this.keys.get(commandId)
+      if (accelerator && accelerator.length > 1) {
+        electronLocalshortcut.unregister(win, accelerator)
+      }
+    }
+  }
+
+  _enableTerminalConflictingShortcuts(win) {
+    const conflictingCommands = this._getTerminalConflictingCommands()
+    for (const commandId of conflictingCommands) {
+      const accelerator = this.keys.get(commandId)
+      if (accelerator && accelerator.length > 1) {
+        this.registerAccelerator(win, accelerator, () => {
+          this.commandManager.execute(commandId, win)
+        })
+      }
+    }
+  }
+
+  cleanupWindow(win) {
+    // Clean up terminal focus tracking when a window is closed
+    this._terminalFocusedWindows.delete(win)
   }
 
   getDefaultKeybindings () {

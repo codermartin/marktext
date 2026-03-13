@@ -135,6 +135,15 @@ export default {
         ipcRenderer.send('mt::terminal-resize', this.windowId, { cols, rows })
       })
 
+      // Handle terminal focus/blur events to manage keybindings
+      this.term.onFocus(() => {
+        ipcRenderer.send('mt::terminal-focus', this.windowId, true)
+      })
+
+      this.term.onBlur(() => {
+        ipcRenderer.send('mt::terminal-focus', this.windowId, false)
+      })
+
       // Watch container size changes (panel resize)
       this.resizeObserver = new ResizeObserver(() => {
         if (this.fitAddon) this.fitAddon.fit()
